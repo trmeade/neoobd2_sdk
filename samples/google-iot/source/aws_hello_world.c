@@ -110,7 +110,7 @@ void messageArrived(MessageData* data)
 
     configPRINTF(("Message arrived on topic %.*s: %.*s\r\n\r\n", data->topicName->lenstring.len, data->topicName->lenstring.data,
         data->message->payloadlen, data->message->payload));
-//         prvTxGenericCAN(cCANMsg, echoCAN_DATA_LEN, 0x01);
+         prvTxGenericCAN(cCANMsg, echoCAN_DATA_LEN, 0x01);
 }
 
 /*-----------------------------------------------------------*/
