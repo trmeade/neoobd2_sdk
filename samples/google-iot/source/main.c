@@ -48,7 +48,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
- 
+
 /*
  * Debug setup instructions:
  * 1) Open the debug configuration dialog.
@@ -79,8 +79,6 @@
 /* Demo files. */
 #include "aws_logging_task.h"
 #include "aws_demo_runner.h"
-#include "aws_system_init.h"
-#include "aws_dev_mode_key_provisioning.h"
 
 /* CC3220SF board file. */
 #include "Board.h"
@@ -89,20 +87,9 @@
 #include "obd2pro_wifi_cc32xx_ism.h"
 #include "obd2pro_wifi_cc32xx.h"
 
-/* Application version info. */
-#include "aws_application_version.h"
-
-/* Declare the firmware version structure for all to see. */
-const AppVersion32_t xAppFirmwareVersion =
-{
-    .u.x.ucMajor = APP_VERSION_MAJOR,
-    .u.x.ucMinor = APP_VERSION_MINOR,
-    .u.x.usBuild = APP_VERSION_BUILD,
-};
-
 #define mainLOGGING_MESSAGE_QUEUE_LENGTH    (15)
 
-/* The task delay for allowing the lower priority logging task to print out Wi-Fi 
+/* The task delay for allowing the lower priority logging task to print out Wi-Fi
  * failure status before blocking indefinitely. */
 #define mainLOGGING_WIFI_STATUS_DELAY       pdMS_TO_TICKS( 1000 )
 
@@ -189,7 +176,7 @@ void vApplicationDaemonTaskStartupHook(void)
 	GPIO_write(CC_UART_EN, 1);
 	GPIO_write(WIFI_INT, 1);
 	GPIO_write(CC_LED0, 1);
-	
+
     /* Configure the UART. */
     xtUartHndl = InitTerm();
     UART_control( xtUartHndl, UART_CMD_RXDISABLE, NULL );
@@ -214,23 +201,14 @@ void vApplicationDaemonTaskStartupHook(void)
         {
         }
     }
-	
-	/* A simple example to demonstrate key and certificate provisioning in
-     * flash using PKCS#11 interface. This should be replaced
-     * by production ready key provisioning mechanism. This function must be called after
-     * initializing the TI File System using WIFI_On. */
-//    vDevModeKeyProvisioning();
-	
-	/* Initialize the AWS Libraries system. */
-    if ( SYSTEM_Init() == pdPASS )
-    {
+
         prvWifiConnect();
 
 		/* Initialize the Intrepid ISM Library before starting app tasks */
 		ismInit();
-		
+
         DEMO_RUNNER_RunDemos();
-    }
+    
 }
 /*-----------------------------------------------------------*/
 
