@@ -24,7 +24,7 @@
  */
 
 
- /*
+/*
  * Copyright (c) 2018 Intrepid Control Systems, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -115,18 +115,18 @@ extern void Spy_ErrorState(int, int, int, int);
 void ismInit()
 
 {
-		icsISM_PreInit();
+	icsISM_PreInit();
 
-	    RegisterInitFunc(CM_ExtensionInit);
-	    RegisterMsProcessFunc(Spy_EveryLoop);
-	    RegisterBeforeStartedFunc(Spy_BeforeStarted);
-	    RegisterStartedFunc(Spy_Started);
-	    RegisterMainFunc(Spy_Main);
-	    RegisterErrorFrameFunc(Spy_ErrorFrame);
-	    RegisterErrorStateFunc(Spy_ErrorState);
-	    RegisterEveryMessageFunc(CM_EveryMessage);
+	RegisterInitFunc(CM_ExtensionInit);
+	RegisterMsProcessFunc(Spy_EveryLoop);
+	RegisterBeforeStartedFunc(Spy_BeforeStarted);
+	RegisterStartedFunc(Spy_Started);
+	RegisterMainFunc(Spy_Main);
+	RegisterErrorFrameFunc(Spy_ErrorFrame);
+	RegisterErrorStateFunc(Spy_ErrorState);
+	RegisterEveryMessageFunc(CM_EveryMessage);
 
-		icsISM_Init();
+	icsISM_Init();
 }
 
 /**
@@ -140,19 +140,19 @@ void ismInit()
  * @return This function should not return.
  */
 int main( void )
- {
-    /* Call board init functions. */
-    Board_initGeneral();
+{
+	/* Call board init functions. */
+	Board_initGeneral();
 
-    /* Start logging task. */
-    xLoggingTaskInitialize( democonfigTASKSTACKSIZE,
-                            tskIDLE_PRIORITY,
-                            mainLOGGING_MESSAGE_QUEUE_LENGTH );
+	/* Start logging task. */
+	xLoggingTaskInitialize( democonfigTASKSTACKSIZE,
+	                        tskIDLE_PRIORITY,
+	                        mainLOGGING_MESSAGE_QUEUE_LENGTH );
 
-    /* Start the FreeRTOS scheduler. */
-    vTaskStartScheduler();
+	/* Start the FreeRTOS scheduler. */
+	vTaskStartScheduler();
 
-    return( 0 );
+	return( 0 );
 }
 
 /*-----------------------------------------------------------*/
@@ -165,50 +165,50 @@ int main( void )
  */
 void vApplicationDaemonTaskStartupHook(void)
 {
-    UART_Handle xtUartHndl;
-    WIFIReturnCode_t xWifiStatus;
+	UART_Handle xtUartHndl;
+	WIFIReturnCode_t xWifiStatus;
 
-    /* Hardware initialization required after the RTOS is running. */
-    Board_initGPIO();
-    Board_initSPI();
+	/* Hardware initialization required after the RTOS is running. */
+	Board_initGPIO();
+	Board_initSPI();
 
 	/* Initialize GPIO to enable UART0 as UART Terminal */
 	GPIO_write(CC_UART_EN, 1);
 	GPIO_write(WIFI_INT, 1);
 	GPIO_write(CC_LED0, 1);
 
-    /* Configure the UART. */
-    xtUartHndl = InitTerm();
-    UART_control( xtUartHndl, UART_CMD_RXDISABLE, NULL );
+	/* Configure the UART. */
+	xtUartHndl = InitTerm();
+	UART_control( xtUartHndl, UART_CMD_RXDISABLE, NULL );
 
-    configPRINTF( ( "Starting Wi-Fi Module ...\r\n" ) );
+	configPRINTF( ( "Starting Wi-Fi Module ...\r\n" ) );
 
-    /* Initialize Wi-Fi module. This is called before key provisioning because
-     * initializing the Wi-Fi module also initializes the CC3220SF's file system. */
-    xWifiStatus = WIFI_On();
+	/* Initialize Wi-Fi module. This is called before key provisioning because
+	 * initializing the Wi-Fi module also initializes the CC3220SF's file system. */
+	xWifiStatus = WIFI_On();
 	if( xWifiStatus == eWiFiSuccess )
-    {
-        configPRINTF( ( "Wi-Fi module initialized.\r\n" ) );
-    }
-    else
-    {
-        configPRINTF( ( "Wi-Fi module failed to initialize.\r\n" ) );
+	{
+		configPRINTF( ( "Wi-Fi module initialized.\r\n" ) );
+	}
+	else
+	{
+		configPRINTF( ( "Wi-Fi module failed to initialize.\r\n" ) );
 
-        /* Delay to allow the lower priority logging task to print the above status. */
-        vTaskDelay( mainLOGGING_WIFI_STATUS_DELAY );
+		/* Delay to allow the lower priority logging task to print the above status. */
+		vTaskDelay( mainLOGGING_WIFI_STATUS_DELAY );
 
-        while( 1 )
-        {
-        }
-    }
+		while( 1 )
+		{
+		}
+	}
 
-        prvWifiConnect();
+	prvWifiConnect();
 
-		/* Initialize the Intrepid ISM Library before starting app tasks */
-		ismInit();
+	/* Initialize the Intrepid ISM Library before starting app tasks */
+	ismInit();
 
-        DEMO_RUNNER_RunDemos();
-    
+	DEMO_RUNNER_RunDemos();
+
 }
 /*-----------------------------------------------------------*/
 
@@ -218,57 +218,57 @@ void vApplicationDaemonTaskStartupHook(void)
  */
 static void prvWifiConnect( void )
 {
-    WIFIReturnCode_t xWifiStatus;
-    WIFINetworkParams_t xNetworkParams;
-    uint8_t ucTempIp[4];
+	WIFIReturnCode_t xWifiStatus;
+	WIFINetworkParams_t xNetworkParams;
+	uint8_t ucTempIp[4];
 
-    /* Initialize Network params. */
-    xNetworkParams.pcSSID = clientcredentialWIFI_SSID;
-    xNetworkParams.ucSSIDLength = sizeof( clientcredentialWIFI_SSID );
-    xNetworkParams.pcPassword = clientcredentialWIFI_PASSWORD;
-    xNetworkParams.ucPasswordLength = sizeof( clientcredentialWIFI_PASSWORD );
-    xNetworkParams.xSecurity = clientcredentialWIFI_SECURITY;
-    xNetworkParams.cChannel = 0;
+	/* Initialize Network params. */
+	xNetworkParams.pcSSID = clientcredentialWIFI_SSID;
+	xNetworkParams.ucSSIDLength = sizeof( clientcredentialWIFI_SSID );
+	xNetworkParams.pcPassword = clientcredentialWIFI_PASSWORD;
+	xNetworkParams.ucPasswordLength = sizeof( clientcredentialWIFI_PASSWORD );
+	xNetworkParams.xSecurity = clientcredentialWIFI_SECURITY;
+	xNetworkParams.cChannel = 0;
 
-    /* Connect to Wi-Fi. */
-    xWifiStatus = WIFI_ConnectAP( &xNetworkParams );
-    if( xWifiStatus == eWiFiSuccess )
-    {
-        configPRINTF( ( "Wi-Fi connected to AP %s.\r\n", xNetworkParams.pcSSID ) );
+	/* Connect to Wi-Fi. */
+	xWifiStatus = WIFI_ConnectAP( &xNetworkParams );
+	if( xWifiStatus == eWiFiSuccess )
+	{
+		configPRINTF( ( "Wi-Fi connected to AP %s.\r\n", xNetworkParams.pcSSID ) );
 
-        xWifiStatus = WIFI_GetIP( ucTempIp );
-        if ( eWiFiSuccess == xWifiStatus )
-        {
-            configPRINTF( ( "IP Address acquired %d.%d.%d.%d\r\n",
-                            ucTempIp[ 0 ], ucTempIp[ 1 ], ucTempIp[ 2 ], ucTempIp[ 3 ] ) );
-        }
+		xWifiStatus = WIFI_GetIP( ucTempIp );
+		if ( eWiFiSuccess == xWifiStatus )
+		{
+			configPRINTF( ( "IP Address acquired %d.%d.%d.%d\r\n",
+			                ucTempIp[ 0 ], ucTempIp[ 1 ], ucTempIp[ 2 ], ucTempIp[ 3 ] ) );
+		}
 
-    }
-    else
-    {
-        /* If the Wi-Fi fails to connect, then the logic in ti_code/network_if.c asks
-         * the user for a open SSID to connect to instead. The code in this else-statement
-         * is for consistency between in the demos for each board. */
+	}
+	else
+	{
+		/* If the Wi-Fi fails to connect, then the logic in ti_code/network_if.c asks
+		 * the user for a open SSID to connect to instead. The code in this else-statement
+		 * is for consistency between in the demos for each board. */
 
-        /* Connection failed, configure SoftAP. */
-        configPRINTF( ( "Wi-Fi failed to connect to AP %s.\r\n", xNetworkParams.pcSSID ) );
+		/* Connection failed, configure SoftAP. */
+		configPRINTF( ( "Wi-Fi failed to connect to AP %s.\r\n", xNetworkParams.pcSSID ) );
 
-        xNetworkParams.pcSSID = wificonfigACCESS_POINT_SSID_PREFIX;
-        xNetworkParams.pcPassword = wificonfigACCESS_POINT_PASSKEY;
-        xNetworkParams.xSecurity = wificonfigACCESS_POINT_SECURITY;
-        xNetworkParams.cChannel = wificonfigACCESS_POINT_CHANNEL;
+		xNetworkParams.pcSSID = wificonfigACCESS_POINT_SSID_PREFIX;
+		xNetworkParams.pcPassword = wificonfigACCESS_POINT_PASSKEY;
+		xNetworkParams.xSecurity = wificonfigACCESS_POINT_SECURITY;
+		xNetworkParams.cChannel = wificonfigACCESS_POINT_CHANNEL;
 
-        configPRINTF( ( "Connect to SoftAP %s using password %s. \r\n",
-                        xNetworkParams.pcSSID, xNetworkParams.pcPassword ) );
+		configPRINTF( ( "Connect to SoftAP %s using password %s. \r\n",
+		                xNetworkParams.pcSSID, xNetworkParams.pcPassword ) );
 
-        while( WIFI_ConfigureAP( &xNetworkParams ) != eWiFiSuccess )
-        {
-            configPRINTF( ( "Connect to SoftAP %s using password %s and configure Wi-Fi. \r\n",
-                            xNetworkParams.pcSSID, xNetworkParams.pcPassword ) );
-        }
+		while( WIFI_ConfigureAP( &xNetworkParams ) != eWiFiSuccess )
+		{
+			configPRINTF( ( "Connect to SoftAP %s using password %s and configure Wi-Fi. \r\n",
+			                xNetworkParams.pcSSID, xNetworkParams.pcPassword ) );
+		}
 
-        configPRINTF( ( "Wi-Fi configuration successful. \r\n" ) );
-    }
+		configPRINTF( ( "Wi-Fi configuration successful. \r\n" ) );
+	}
 }
 /*-----------------------------------------------------------*/
 
@@ -284,7 +284,7 @@ static void prvWifiConnect( void )
  */
 void vApplicationMallocFailedHook()
 {
-		configPRINTF(("ERROR: Malloc failed to allocate memory\r\n"));
+	configPRINTF(("ERROR: Malloc failed to allocate memory\r\n"));
 }
 
 /*-----------------------------------------------------------*/
@@ -301,12 +301,12 @@ void vApplicationMallocFailedHook()
  *
  */
 void vApplicationStackOverflowHook(TaskHandle_t xTask,
-								   char *		pcTaskName)
+                                   char *               pcTaskName)
 {
-		portDISABLE_INTERRUPTS();
+	portDISABLE_INTERRUPTS();
 
-		/* Loop forever */
-		for (;; ) ;
+	/* Loop forever */
+	for (;; ) ;
 }
 
 /*-----------------------------------------------------------*/
@@ -314,27 +314,27 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask,
 /* configUSE_STATIC_ALLOCATION is set to 1, so the application must provide an
  * implementation of vApplicationGetIdleTaskMemory() to provide the memory that is
  * used by the Idle task. */
-void vApplicationGetIdleTaskMemory(StaticTask_t **	ppxIdleTaskTCBBuffer,
-								   StackType_t **	ppxIdleTaskStackBuffer,
-								   uint32_t *		pulIdleTaskStackSize)
+void vApplicationGetIdleTaskMemory(StaticTask_t **      ppxIdleTaskTCBBuffer,
+                                   StackType_t **       ppxIdleTaskStackBuffer,
+                                   uint32_t *           pulIdleTaskStackSize)
 {
 /* If the buffers to be provided to the Idle task are declared inside this
  * function then they must be declared static - otherwise they will be allocated on
  * the stack and so not exists after this function exits. */
-		static StaticTask_t xIdleTaskTCB;
-		static StackType_t uxIdleTaskStack[configMINIMAL_STACK_SIZE];
+	static StaticTask_t xIdleTaskTCB;
+	static StackType_t uxIdleTaskStack[configMINIMAL_STACK_SIZE];
 
-		/* Pass out a pointer to the StaticTask_t structure in which the Idle
-		 * task's state will be stored. */
-		*ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
+	/* Pass out a pointer to the StaticTask_t structure in which the Idle
+	 * task's state will be stored. */
+	*ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
 
-		/* Pass out the array that will be used as the Idle task's stack. */
-		*ppxIdleTaskStackBuffer = uxIdleTaskStack;
+	/* Pass out the array that will be used as the Idle task's stack. */
+	*ppxIdleTaskStackBuffer = uxIdleTaskStack;
 
-		/* Pass out the size of the array pointed to by *ppxIdleTaskStackBuffer.
-		 * Note that, as the array is necessarily of type StackType_t,
-		 * configMINIMAL_STACK_SIZE is specified in words, not bytes. */
-		*pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+	/* Pass out the size of the array pointed to by *ppxIdleTaskStackBuffer.
+	 * Note that, as the array is necessarily of type StackType_t,
+	 * configMINIMAL_STACK_SIZE is specified in words, not bytes. */
+	*pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
 }
 
 /*-----------------------------------------------------------*/
@@ -343,26 +343,26 @@ void vApplicationGetIdleTaskMemory(StaticTask_t **	ppxIdleTaskTCBBuffer,
  * application must provide an implementation of vApplicationGetTimerTaskMemory()
  * to provide the memory that is used by the Timer service task. */
 void vApplicationGetTimerTaskMemory(StaticTask_t ** ppxTimerTaskTCBBuffer,
-									StackType_t **	ppxTimerTaskStackBuffer,
-									uint32_t *		pulTimerTaskStackSize)
+                                    StackType_t **  ppxTimerTaskStackBuffer,
+                                    uint32_t *              pulTimerTaskStackSize)
 {
 /* If the buffers to be provided to the Timer task are declared inside this
  * function then they must be declared static - otherwise they will be allocated on
  * the stack and so not exists after this function exits. */
-		static StaticTask_t xTimerTaskTCB;
-		static StackType_t uxTimerTaskStack[configTIMER_TASK_STACK_DEPTH];
+	static StaticTask_t xTimerTaskTCB;
+	static StackType_t uxTimerTaskStack[configTIMER_TASK_STACK_DEPTH];
 
-		/* Pass out a pointer to the StaticTask_t structure in which the Timer
-		 * task's state will be stored. */
-		*ppxTimerTaskTCBBuffer = &xTimerTaskTCB;
+	/* Pass out a pointer to the StaticTask_t structure in which the Timer
+	 * task's state will be stored. */
+	*ppxTimerTaskTCBBuffer = &xTimerTaskTCB;
 
-		/* Pass out the array that will be used as the Timer task's stack. */
-		*ppxTimerTaskStackBuffer = uxTimerTaskStack;
+	/* Pass out the array that will be used as the Timer task's stack. */
+	*ppxTimerTaskStackBuffer = uxTimerTaskStack;
 
-		/* Pass out the size of the array pointed to by *ppxTimerTaskStackBuffer.
-		 * Note that, as the array is necessarily of type StackType_t,
-		 * configTIMER_TASK_STACK_DEPTH is specified in words, not bytes. */
-		*pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
+	/* Pass out the size of the array pointed to by *ppxTimerTaskStackBuffer.
+	 * Note that, as the array is necessarily of type StackType_t,
+	 * configTIMER_TASK_STACK_DEPTH is specified in words, not bytes. */
+	*pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
 
 /*-----------------------------------------------------------*/
@@ -384,5 +384,5 @@ void vApplicationGetTimerTaskMemory(StaticTask_t ** ppxTimerTaskTCBBuffer,
  */
 void portWEAK_SYMBOL SimpleLinkSockEventHandler(void)
 {
-		configPRINTF(("Call of stub socket event handler.\r\n"));
+	configPRINTF(("Call of stub socket event handler.\r\n"));
 }

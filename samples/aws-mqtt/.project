@@ -38,8 +38,12 @@
 	</linkedResources>
 	<variableList>
 		<variable>
+			<name>ORIGINAL_PROJECT_ROOT</name>
+			<value>file:/C:/ICS/neoobd2_sdk/samples/aws-mqtt</value>
+		</variable>
+		<variable>
 			<name>SDK_ROOT</name>
-			<value>$%7BPARENT-2-PROJECT_LOC%7D</value>
+			<value>$%7BPARENT-2-ORIGINAL_PROJECT_ROOT%7D</value>
 		</variable>
 	</variableList>
 </projectDescription>
