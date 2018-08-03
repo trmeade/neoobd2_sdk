@@ -1,6 +1,5 @@
 samples/*/Debug
 samples/*/Release
-samples/*/certs
 .launches
 .settings
 .metadata
