@@ -14,33 +14,18 @@
 #include "message_buffer.h"
 
 /* Credentials includes. */
-#include "aws_clientcredential.h"
+#include "credentials.h"
 
 /* Demo includes. */
 #include "aws_demo_config.h"
+#include "mqtt_demo.h"
 #include "obd2pro_wifi_cc32xx_ism.h"
 #include "obd2pro_wifi_cc32xx.h"
-
-
-
-/**
- * @brief MQTT client ID.
- *
- * It must be unique per MQTT broker.
- */
-#define echoCLIENT_ID          ((const uint8_t *)"MQTTEcho")
 
 /**
  * @brief The topic that the MQTT client both subscribes and publishes to.
  */
-#define echoTOPIC_NAME         ((const uint8_t *)"freertos/demos/echo")
-
-/**
- * @brief The string appended to messages that are echoed back to the MQTT broker.
- *
- * It is also used to detect if a received message has already been acknowledged.
- */
-#define echoACK_STRING         ((const char *)" ACK")
+#define TOPIC_NAME         ((const uint8_t *)"/devices/obd2-iot-demo1/events")
 
 /**
  * @brief Dimension of the character array buffers used to hold data (strings in
@@ -147,8 +132,7 @@ static void prvMQTTEchoTask(void *pvParameters)
        NetworkInit(&network);
        MQTTClientInit(&client, &network, 30000, sendbuf, sizeof(sendbuf), readbuf, sizeof(readbuf));
 
-       char* address = "test.mosquitto.org";
-       if ((rc = NetworkConnect(&network, address, 1883)) != 0)
+       if ((rc = NetworkConnect(&network, credentialsMQTT_BROKER, credentialsMQTT_BROKER_PORT, NULL)) != 0)
        {
          configPRINTF(("Return code from network connect is %d\r\n", rc));
          goto exit;
@@ -161,41 +145,36 @@ static void prvMQTTEchoTask(void *pvParameters)
    #endif
 
        connectData.MQTTVersion = 3;
-       connectData.clientID.cstring = "FreeRTOS_sample";
+       connectData.clientID.cstring = credentialsMQTT_DEVIE_CLIENT_ID;
 
        if ((rc = MQTTConnect(&client, &connectData)) == 0)
        {
            configPRINTF(("MQTT Connected\r\n\r\n"));
-           if ((rc = MQTTSubscribe(&client, "ICS/sample/#", QOS0, messageArrived)) == 0)
+           do
            {
-               do
-               {
-                    MQTTMessage message;
-                    char payload[30];
+                MQTTMessage message;
+                char payload[30];
 
-                    message.qos = QOS0;
-                    message.retained = 0;
-                    message.payload = payload;
-                    sprintf(payload, "message number %d", count);
-                    message.payloadlen = strlen(payload);
+                message.qos = QOS0;
+                message.retained = 0;
+                message.payload = payload;
+                sprintf(payload, "message number %d", count);
+                message.payloadlen = strlen(payload);
 
-                    if ((rc = MQTTPublish(&client, "ICS/sample/a", &message)) == 0)
-                    {
-                      #if !defined(MQTT_TASK)
-                          if ((rc = MQTTYield(&client, 1000)) != 0)
-                              configPRINTF(("Return code from yield is %d\r\n", rc));
-                      #endif
-                    }
-                    else {
-                      configPRINTF(("Return code from MQTT publish is %d\r\n", rc));
-                    }
+                if ((rc = MQTTPublish(&client, TOPIC_NAME, &message)) == 0)
+                {
+                  #if !defined(MQTT_TASK)
+                      if ((rc = MQTTYield(&client, 1000)) != 0)
+                          configPRINTF(("Return code from yield is %d\r\n", rc));
+                  #endif
+                }
+                else {
+                  configPRINTF(("Return code from MQTT publish is %d\r\n", rc));
+                }
 
-                    ++count;
-                } while (count < 5);
-           }
-           else {
-               configPRINTF(("Return code from MQTT subscribe is %d\r\n", rc));
-           }
+                ++count;
+            } while (count < 5);
+
        }
        else
        {
