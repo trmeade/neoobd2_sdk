@@ -1,5 +1,4 @@
 /* Standard includes. */
-#include <mqtt_demo.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +17,9 @@
 
 /* Demo includes. */
 #include "aws_demo_config.h"
+#include "aws_hello_world.h"
+
+// ISM Lib includes
 #include "obd2pro_wifi_cc32xx_ism.h"
 #include "obd2pro_wifi_cc32xx.h"
 
