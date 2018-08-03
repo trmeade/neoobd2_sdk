@@ -64,7 +64,7 @@
 /* EDIT THIS FILE:
  * Wifi SSID, password & security settings,
  * AWS endpoint, certificate, private key & thing name. */
-#include "credentials.h"
+#include "aws_clientcredential.h"
 
 /* Demo priorities & stack sizes. */
 #include "aws_demo_config.h"
@@ -78,7 +78,7 @@
 
 /* Demo files. */
 #include "aws_logging_task.h"
-#include "mqtt_demo.h"
+#include "aws_demo_runner.h"
 
 /* CC3220SF board file. */
 #include "Board.h"
@@ -223,11 +223,11 @@ static void prvWifiConnect( void )
 	uint8_t ucTempIp[4];
 
 	/* Initialize Network params. */
-	xNetworkParams.pcSSID = credentialsWIFI_SSID;
-	xNetworkParams.ucSSIDLength = sizeof( credentialsWIFI_SSID );
-	xNetworkParams.pcPassword = credentialsWIFI_PASSWORD;
-	xNetworkParams.ucPasswordLength = sizeof( credentialsWIFI_PASSWORD );
-	xNetworkParams.xSecurity = SL_WLAN_SEC_TYPE_WPA_WPA2;
+	xNetworkParams.pcSSID = clientcredentialWIFI_SSID;
+	xNetworkParams.ucSSIDLength = sizeof( clientcredentialWIFI_SSID );
+	xNetworkParams.pcPassword = clientcredentialWIFI_PASSWORD;
+	xNetworkParams.ucPasswordLength = sizeof( clientcredentialWIFI_PASSWORD );
+	xNetworkParams.xSecurity = clientcredentialWIFI_SECURITY;
 	xNetworkParams.cChannel = 0;
 
 	/* Connect to Wi-Fi. */
