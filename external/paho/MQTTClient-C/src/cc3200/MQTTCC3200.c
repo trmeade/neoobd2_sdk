@@ -82,6 +82,7 @@ int cc3200_write(Network* n, unsigned char* buffer, int len, int timeout_ms) {
 	timeVal.tv_sec = 0;
 	timeVal.tv_usec = timeout_ms * 1000;
 	do {
+		/* TBD: If this library is for single socket then sl_Select does not make sense? */
 		readySock = sl_Select(n->my_socket + 1, NULL, &fdset, NULL, &timeVal);
 	} while(readySock != 1);
 	rc = sl_Send(n->my_socket, buffer, len, 0);
@@ -95,80 +96,28 @@ void cc3200_disconnect(Network* n) {
 
 
 void NetworkInit(Network* n) {
-	n->my_socket = 0;
+	n->my_socket = 0;  // so this is just for single socket, no multiple socket threads should be implemented
 	n->mqttread = cc3200_read;
 	n->mqttwrite = cc3200_write;
 	n->disconnect = cc3200_disconnect;
 }
 
-/*
+#if 0
 int TLSConnectNetwork(Network *n, char* addr, int port, SlSockSecureFiles_t* certificates, unsigned char sec_method, unsigned int cipher, char server_verify) {
-	SlSockAddrIn_t sAddr;
-	int addrSize;
-	int retVal;
-	unsigned long ipAddress;
-
-	retVal = sl_NetAppDnsGetHostByName(addr, strlen(addr), &ipAddress, AF_INET);
-	if (retVal < 0) {
-		return -1;
-	}
-
-	sAddr.sin_family = AF_INET;
-	sAddr.sin_port = sl_Htons((unsigned short)port);
-	sAddr.sin_addr.s_addr = sl_Htonl(ipAddress);
-
-	addrSize = sizeof(SlSockAddrIn_t);
-
-	n->my_socket = sl_Socket(SL_AF_INET,SL_SOCK_STREAM, SL_SEC_SOCKET);
-	if (n->my_socket < 0) {
-		return -1;
-	}
-
-	SlSockSecureMethod method;
-	method.secureMethod = sec_method;
-	retVal = sl_SetSockOpt(n->my_socket, SL_SOL_SOCKET, SL_SO_SECMETHOD, &method, sizeof(method));
-	if (retVal < 0) {
-		return retVal;
-	}
-
-	SlSockSecureMask mask;
-	mask.secureMask = cipher;
-	retVal = sl_SetSockOpt(n->my_socket, SL_SOL_SOCKET, SL_SO_SECURE_MASK, &mask, sizeof(mask));
-	if (retVal < 0) {
-		return retVal;
-	}
-
-	if (certificates != NULL) {
-		retVal = sl_SetSockOpt(n->my_socket, SL_SOL_SOCKET, SL_SO_SECURE_FILES, certificates->secureFiles, sizeof(SlSockSecureFiles_t));
-		if(retVal < 0)
-		{
-			return retVal;
-		}
-	}
-
-	retVal = sl_Connect(n->my_socket, ( SlSockAddr_t *)&sAddr, addrSize);
-	if( retVal < 0 ) {
-		if (server_verify || retVal != -453) {
-			sl_Close(n->my_socket);
-			return retVal;
-		}
-	}
-
-	SysTickIntRegister(SysTickIntHandler);
-	SysTickPeriodSet(80000);
-	SysTickEnable();
-
-	return retVal;
 }
-*/
-int NetworkConnect(Network* n, char* addr, int port)
+#endif
+
+int NetworkConnect(Network* n, char* addr, int port, void * secureArgs)
 {
 	SlSockAddrIn_t sAddr;
 	int addrSize;
 	int retVal;
 	unsigned long ipAddress;
 
-	sl_NetAppDnsGetHostByName((int8_t*)addr, strlen(addr), &ipAddress, SL_AF_INET);
+	retVal = sl_NetAppDnsGetHostByName(addr, strlen(addr), &ipAddress, SL_AF_INET);
+	if (retVal < 0) {
+		return -1;
+	}
 
 	sAddr.sin_family = SL_AF_INET;
 	sAddr.sin_port = sl_Htons((unsigned short)port);
@@ -177,12 +126,75 @@ int NetworkConnect(Network* n, char* addr, int port)
 	addrSize = sizeof(SlSockAddrIn_t);
 
 	n->my_socket = sl_Socket(SL_AF_INET,SL_SOCK_STREAM, 0);
-	if( n->my_socket < 0 ) {
+	if (n->my_socket < 0) {
 		// error
 		return -1;
 	}
+#ifdef SECURE_SOCKET
+
+	if (secureArgs == NULL) {
+		return -1;
+	}
+	SecureParams_t * args = ((SecureParams_t*)(secureArgs));
+
+	/*Set Protocol, SL_SO_SEC_METHOD_TLSV1_2*/
+	SlSockSecureMethod_t method;
+	method.SecureMethod = args->sec_method;
+	retVal = sl_SetSockOpt(n->my_socket,
+												 SL_SOL_SOCKET,
+												 SL_SO_SECMETHOD,
+												 &method, sizeof(method));
+	if (retVal < 0) {
+		return retVal;
+	}
+
+	/*set cipher, SL_SEC_MASK_TLS_RSA_WITH_AES_128_GCM_SHA256*/
+	SlSockSecureMask_t mask;
+	mask.SecureMask = args->cipher;
+	retVal = sl_SetSockOpt(n->my_socket,
+												 SL_SOL_SOCKET,
+												 SL_SO_SECURE_MASK,
+												 &mask, sizeof(mask));
+	if (retVal < 0) {
+		return retVal;
+	}
+
+	retVal = sl_SetSockOpt( n->my_socket,
+													SL_SOL_SOCKET,
+													SL_SO_SECURE_FILES_CA_FILE_NAME,
+													ROOTCA_FILENAME, strlen( ROOTCA_FILENAME ) );
+
+#ifdef CLIENT_VERIFICATION
+
+	retVal = sl_SetSockOpt( n->my_socket,
+													SL_SOL_SOCKET,
+													SL_SO_SECURE_FILES_PRIVATE_KEY_FILE_NAME,
+													PRIVATEKEY_FILENAME, strlen(PRIVATEKEY_FILENAME));
+
+	if( retVal < 0 ) {
+			return retVal;
+		}
+
+	retVal = sl_SetSockOpt ( n->my_socket,
+													 SL_SOL_SOCKET,
+													 SL_SO_SECURE_FILES_CERTIFICATE_FILE_NAME,
+													 TRUSTED_CERTIFICATE_FILENAME, strlen(TRUSTED_CERTIFICATE_FILENAME));
+
+	if (retVal < 0) {
+	return retVal;
+}
+
+#endif //CLIENT_VERIFICATION
+
+#endif //SECURE_SOCKET
 
 	retVal = sl_Connect(n->my_socket, ( SlSockAddr_t *)&sAddr, addrSize);
+/*
+if (server_verify || retVal != -453) {
+			sl_Close(n->my_socket);
+			return retVal;
+	}
+*/
 	if( retVal < 0 ) {
 		// error
 		sl_Close(n->my_socket);

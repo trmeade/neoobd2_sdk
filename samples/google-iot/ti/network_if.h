@@ -53,18 +53,18 @@ extern "C"
 
 /* Simplelink includes                                                        */
 #include <ti/drivers/net/wifi/simplelink.h>
-#include "aws_clientcredential.h"
+#include "credentials.h"
 
 /* Values for below macros shall be modified as per access-point(AP)          */
 /* properties SimpleLink device will connect to following AP when application */
 /* is executed.                                                               */
 
 /* AP SSID                                                                    */
-#define SSID_NAME               clientcredentialWIFI_SSID
+#define SSID_NAME               credentialsWIFI_SSID
 /* Security type (OPEN or WEP or WPA)                                         */
 #define SECURITY_TYPE           SL_WLAN_SEC_TYPE_WPA_WPA2
 /* Password of the secured AP                                                 */
-#define SECURITY_KEY            clientcredentialWIFI_PASSWORD
+#define SECURITY_KEY            credentialsWIFI_PASSWORD
 #define SSID_LEN_MAX            32
 #define BSSID_LEN_MAX           6
 

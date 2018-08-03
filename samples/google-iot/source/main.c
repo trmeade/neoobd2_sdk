@@ -64,7 +64,7 @@
 /* EDIT THIS FILE:
  * Wifi SSID, password & security settings,
  * AWS endpoint, certificate, private key & thing name. */
-#include "aws_clientcredential.h"
+#include "credentials.h"
 
 /* Demo priorities & stack sizes. */
 #include "aws_demo_config.h"
@@ -80,7 +80,7 @@
 #include "aws_logging_task.h"
 #include "aws_demo_runner.h"
 #include "aws_system_init.h"
-#include "aws_dev_mode_key_provisioning.h"
+#include "mqtt_demo.h"
 
 /* CC3220SF board file. */
 #include "Board.h"
@@ -89,16 +89,6 @@
 #include "obd2pro_wifi_cc32xx_ism.h"
 #include "obd2pro_wifi_cc32xx.h"
 
-/* Application version info. */
-#include "aws_application_version.h"
-
-/* Declare the firmware version structure for all to see. */
-const AppVersion32_t xAppFirmwareVersion =
-{
-    .u.x.ucMajor = APP_VERSION_MAJOR,
-    .u.x.ucMinor = APP_VERSION_MINOR,
-    .u.x.usBuild = APP_VERSION_BUILD,
-};
 
 #define mainLOGGING_MESSAGE_QUEUE_LENGTH    (15)
 
@@ -221,16 +211,13 @@ void vApplicationDaemonTaskStartupHook(void)
      * initializing the TI File System using WIFI_On. */
 //    vDevModeKeyProvisioning();
 	
-	/* Initialize the AWS Libraries system. */
-    if ( SYSTEM_Init() == pdPASS )
-    {
         prvWifiConnect();
 
 		/* Initialize the Intrepid ISM Library before starting app tasks */
 		ismInit();
 		
         DEMO_RUNNER_RunDemos();
-    }
+
 }
 /*-----------------------------------------------------------*/
 
@@ -245,11 +232,11 @@ static void prvWifiConnect( void )
     uint8_t ucTempIp[4];
 
     /* Initialize Network params. */
-    xNetworkParams.pcSSID = clientcredentialWIFI_SSID;
-    xNetworkParams.ucSSIDLength = sizeof( clientcredentialWIFI_SSID );
-    xNetworkParams.pcPassword = clientcredentialWIFI_PASSWORD;
-    xNetworkParams.ucPasswordLength = sizeof( clientcredentialWIFI_PASSWORD );
-    xNetworkParams.xSecurity = clientcredentialWIFI_SECURITY;
+	xNetworkParams.pcSSID = credentialsWIFI_SSID;
+	xNetworkParams.ucSSIDLength = sizeof( credentialsWIFI_SSID );
+	xNetworkParams.pcPassword = credentialsWIFI_PASSWORD;
+	xNetworkParams.ucPasswordLength = sizeof( credentialsWIFI_PASSWORD );
+	xNetworkParams.xSecurity = 2;
     xNetworkParams.cChannel = 0;
 
     /* Connect to Wi-Fi. */

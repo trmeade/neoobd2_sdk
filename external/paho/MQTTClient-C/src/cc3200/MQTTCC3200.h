@@ -25,6 +25,20 @@
 #include "time.h"
 #include "systick.h"
 
+#ifdef SECURE_SOCKET
+
+#define ROOTCA_FILENAME								"/certs/rootca.crt"
+#define PRIVATEKEY_FILENAME 					""
+#define TRUSTED_CERTIFICATE_FILENAME 	""
+
+typedef struct SecurityParams {
+	unsigned char sec_method;
+	unsigned int cipher;
+	char server_verify;
+}SecureParams_t;
+
+#endif //SECURE_SOCKET
+
 typedef struct Timer Timer;
 
 struct Timer {
@@ -54,7 +68,7 @@ int cc3200_write(Network*, unsigned char*, int, int);
 void cc3200_disconnect(Network*);
 void NetworkInit(Network*);
 
-int NetworkConnect(Network*, char*, int);
+int NetworkConnect(Network*, char*, int, void*);
 //int TLSConnectNetwork(Network*, char*, int, SlSockSecureFiles_t*, unsigned char, unsigned int, char);
 
 #endif
