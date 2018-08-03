@@ -26,9 +26,9 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>FreeRTOS</name>
+			<name>afreertos</name>
 			<type>2</type>
-			<locationURI>SDK_ROOT/external/amazon/afreertos/lib/FreeRTOS</locationURI>
+			<locationURI>$%7BSDK_ROOT%7D/external/amazon/afreertos</locationURI>
 		</link>
 		<link>
 			<name>kernel</name>
@@ -39,11 +39,6 @@
 			<name>paho</name>
 			<type>2</type>
 			<locationURI>$%7BSDK_ROOT%7D/external/paho</locationURI>
-		</link>
-		<link>
-			<name>wifi</name>
-			<type>2</type>
-			<locationURI>SDK_ROOT/external/amazon/afreertos/lib/wifi</locationURI>
 		</link>
 	</linkedResources>
 	<variableList>

@@ -8,9 +8,11 @@
 #include "task.h"
 #include "queue.h"
 
-/*MQTT Client includes */
 #include "MQTTClient.h"
 #include "message_buffer.h"
+
+/* MQTT includes. */
+#include "aws_mqtt_agent.h"
 
 /* Credentials includes. */
 #include "aws_clientcredential.h"
